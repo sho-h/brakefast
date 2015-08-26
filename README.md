@@ -1,136 +1,126 @@
-# Bullet
+# Brakefast
 
-[![Gem Version](https://badge.fury.io/rb/bullet.png)](http://badge.fury.io/rb/bullet)
-[![Build Status](https://secure.travis-ci.org/flyerhzm/bullet.png)](http://travis-ci.org/flyerhzm/bullet)
-[![Coverage Status](https://coveralls.io/repos/flyerhzm/bullet/badge.png?branch=master)](https://coveralls.io/r/flyerhzm/bullet)
-<a href="https://codeclimate.com/github/flyerhzm/bullet"><img src="https://codeclimate.com/github/flyerhzm/bullet.png" /></a>
+[![Gem Version](https://badge.fury.io/rb/brakefast.png)](http://badge.fury.io/rb/brakefast)
+[![Build Status](https://secure.travis-ci.org/flyerhzm/brakefast.png)](http://travis-ci.org/flyerhzm/brakefast)
+[![Coverage Status](https://coveralls.io/repos/flyerhzm/brakefast/badge.png?branch=master)](https://coveralls.io/r/flyerhzm/brakefast)
+<a href="https://codeclimate.com/github/flyerhzm/brakefast"><img src="https://codeclimate.com/github/flyerhzm/brakefast.png" /></a>
 [![Coderwall Endorse](http://api.coderwall.com/flyerhzm/endorsecount.png)](http://coderwall.com/flyerhzm)
 
-The Bullet gem is designed to help you increase your application's performance by reducing the number of queries it makes. It will watch your queries while you develop your application and notify you when you should add eager loading (N+1 queries), when you're using eager loading that isn't necessary and when you should use counter cache.
+The Brakefast gem is designed to help you reduce your application's vulnerability. It will watch your code with using [brakeman](http://brakemanscanner.org) while you develop your application and notify you when you use vulnerable code.
 
-Best practice is to use Bullet in development mode or custom mode (staging, profile, etc.). The last thing you want is your clients getting alerts about how lazy you are.
-
-Bullet gem now supports **activerecord** >= 3.0 and **mongoid** >= 2.4.1.
-
-If you use activerecord 2.x, please use bullet <= 4.5.0
-
-## External Introduction
-
-* [http://railscasts.com/episodes/372-bullet](http://railscasts.com/episodes/372-bullet)
-* [http://ruby5.envylabs.com/episodes/9-episode-8-september-8-2009](http://ruby5.envylabs.com/episodes/9-episode-8-september-8-2009)
-* [http://railslab.newrelic.com/2009/10/23/episode-19-on-the-edge-part-1](http://railslab.newrelic.com/2009/10/23/episode-19-on-the-edge-part-1)
-* [http://weblog.rubyonrails.org/2009/10/22/community-highlights](http://weblog.rubyonrails.org/2009/10/22/community-highlights)
+Best practice is to use Brakefast in development mode or custom mode (staging, profile, etc.). The last thing you want is your clients getting alerts about how lazy you are.
 
 ## Install
 
 You can install it as a gem:
 
 ```
-gem install bullet
+gem install brakefast
 ```
 
 or add it into a Gemfile (Bundler):
 
 
 ```ruby
-gem "bullet", :group => "development"
+gem "brakefast", :group => "development"
 ```
-
-**Note**: make sure `bullet` gem is added after activerecord (rails) and
-mongoid.
 
 ## Configuration
 
-Bullet won't do ANYTHING unless you tell it to explicitly. Append to
+Brakefast won't do ANYTHING unless you tell it to explicitly. Append to
 `config/environments/development.rb` initializer with the following code:
 
 ```ruby
 config.after_initialize do
-  Bullet.enable = true
-  Bullet.alert = true
-  Bullet.bullet_logger = true
-  Bullet.console = true
-  Bullet.growl = true
-  Bullet.xmpp = { :account  => 'bullets_account@jabber.org',
-                  :password => 'bullets_password_for_jabber',
+  Brakefast.enable = true
+  Brakefast.alert = true
+  Brakefast.brakefast_logger = true
+  Brakefast.console = true
+  Brakefast.growl = true
+  Brakefast.xmpp = { :account  => 'brakefasts_account@jabber.org',
+                  :password => 'brakefasts_password_for_jabber',
                   :receiver => 'your_account@jabber.org',
                   :show_online_status => true }
-  Bullet.rails_logger = true
-  Bullet.honeybadger = true
-  Bullet.bugsnag = true
-  Bullet.airbrake = true
-  Bullet.rollbar = true
-  Bullet.add_footer = true
-  Bullet.stacktrace_includes = [ 'your_gem', 'your_middleware' ]
-  Bullet.slack = { webhook_url: 'http://some.slack.url', foo: 'bar' }
+  Brakefast.rails_logger = true
+  Brakefast.honeybadger = true
+  Brakefast.bugsnag = true
+  Brakefast.airbrake = true
+  Brakefast.rollbar = true
+  Brakefast.add_footer = true
+  Brakefast.stacktrace_includes = [ 'your_gem', 'your_middleware' ]
+  Brakefast.slack = { webhook_url: 'http://some.slack.url', foo: 'bar' }
 end
 ```
 
-The notifier of Bullet is a wrap of [uniform_notifier](https://github.com/flyerhzm/uniform_notifier)
+The notifier of Brakefast is a wrap of [uniform_notifier](https://github.com/flyerhzm/uniform_notifier)
 
-The code above will enable all seven of the Bullet notification systems:
-* `Bullet.enable`: enable Bullet gem, otherwise do nothing
-* `Bullet.alert`: pop up a JavaScript alert in the browser
-* `Bullet.bullet_logger`: log to the Bullet log file (Rails.root/log/bullet.log)
-* `Bullet.rails_logger`: add warnings directly to the Rails log
-* `Bullet.honeybadger`: add notifications to Honeybadger
-* `Bullet.bugsnag`: add notifications to bugsnag
-* `Bullet.airbrake`: add notifications to airbrake
-* `Bullet.rollbar`: add notifications to rollbar
-* `Bullet.console`: log warnings to your browser's console.log (Safari/Webkit browsers or Firefox w/Firebug installed)
-* `Bullet.growl`: pop up Growl warnings if your system has Growl installed. Requires a little bit of configuration
-* `Bullet.xmpp`: send XMPP/Jabber notifications to the receiver indicated. Note that the code will currently not handle the adding of contacts, so you will need to make both accounts indicated know each other manually before you will receive any notifications. If you restart the development server frequently, the 'coming online' sound for the Bullet account may start to annoy - in this case set :show_online_status to false; you will still get notifications, but the Bullet account won't announce it's online status anymore.
-* `Bullet.raise`: raise errors, useful for making your specs fail unless they have optimized queries
-* `Bullet.add_footer`: adds the details in the bottom left corner of the page
-* `Bullet.stacktrace_includes`: include paths with any of these substrings in the stack trace, even if they are not in your main app
-* `Bullet.slack`: add notifications to slack
+The code above will enable all seven of the Brakefast notification systems:
+* `Brakefast.enable`: enable Brakefast gem, otherwise do nothing
+* `Brakefast.alert`: pop up a JavaScript alert in the browser
+* `Brakefast.brakefast_logger`: log to the Brakefast log file (Rails.root/log/brakefast.log)
+* `Brakefast.rails_logger`: add warnings directly to the Rails log
+* `Brakefast.honeybadger`: add notifications to Honeybadger
+* `Brakefast.bugsnag`: add notifications to bugsnag
+* `Brakefast.airbrake`: add notifications to airbrake
+* `Brakefast.rollbar`: add notifications to rollbar
+* `Brakefast.console`: log warnings to your browser's console.log (Safari/Webkit browsers or Firefox w/Firebug installed)
+* `Brakefast.growl`: pop up Growl warnings if your system has Growl installed. Requires a little bit of configuration
+* `Brakefast.xmpp`: send XMPP/Jabber notifications to the receiver indicated. Note that the code will currently not handle the adding of contacts, so you will need to make both accounts indicated know each other manually before you will receive any notifications. If you restart the development server frequently, the 'coming online' sound for the Brakefast account may start to annoy - in this case set :show_online_status to false; you will still get notifications, but the Brakefast account won't announce it's online status anymore.
+* `Brakefast.raise`: raise errors, useful for making your specs fail unless they have optimized queries
+* `Brakefast.add_footer`: adds the details in the bottom left corner of the page
+* `Brakefast.stacktrace_includes`: include paths with any of these substrings in the stack trace, even if they are not in your main app
+* `Brakefast.slack`: add notifications to slack
 
-Bullet also allows you to disable any of its detectors.
+Brakefast also allows you to disable any of its detectors.
 
 ```ruby
 # Each of these settings defaults to true
 
-# Detect N+1 queries
-Bullet.n_plus_one_query_enable     = false
+# Detect errors
+Brakefast.errors              = false
 
-# Detect eager-loaded associations which are not used
-Bullet.unused_eager_loading_enable = false
+# Detect controller warnings
+Brakefast.controller_warnings = false
 
-# Detect unnecessary COUNT queries which could be avoided
-# with a counter_cache
-Bullet.counter_cache_enable        = false
+# Detect generic warnings
+Brakefast.generic_warnings    = false
+
+# Detect model warnings
+Brakefast.model_warnings      = false
 ```
+
+TODO: update below
 
 ## Whitelist
 
-Sometimes Bullet may notify you of query problems you don't care to fix, or
+Sometimes Brakefast may notify you of query problems you don't care to fix, or
 which come from outside your code. You can whitelist these to ignore them:
 
 ```ruby
-Bullet.add_whitelist :type => :n_plus_one_query, :class_name => "Post", :association => :comments
-Bullet.add_whitelist :type => :unused_eager_loading, :class_name => "Post", :association => :comments
-Bullet.add_whitelist :type => :counter_cache, :class_name => "Country", :association => :cities
+Brakefast.add_whitelist :type => :n_plus_one_query, :class_name => "Post", :association => :comments
+Brakefast.add_whitelist :type => :unused_eager_loading, :class_name => "Post", :association => :comments
+Brakefast.add_whitelist :type => :counter_cache, :class_name => "Country", :association => :cities
 ```
 
-If you want to skip bullet in some specific controller actions, you can
+If you want to skip brakefast in some specific controller actions, you can
 do like
 
 ```ruby
 class ApplicationController < ActionController::Base
-  around_action :skip_bullet
+  around_action :skip_brakefast
 
-  def skip_bullet
-    Bullet.enable = false
+  def skip_brakefast
+    Brakefast.enable = false
     yield
   ensure
-    Bullet.enable = true
+    Brakefast.enable = true
   end
 end
 ```
 
 ## Log
 
-The Bullet log `log/bullet.log` will look something like this:
+The Brakefast log `log/brakefast.log` will look something like this:
 
 * N+1 Query:
 
@@ -168,81 +158,81 @@ see [https://github.com/flyerhzm/uniform_notifier](https://github.com/flyerhzm/u
 
 ## Important
 
-If you find Bullet does not work for you, *please disable your browser's cache*.
+If you find Brakefast does not work for you, *please disable your browser's cache*.
 
 ## Advanced
 
 ### Profile a job
 
-The Bullet gem uses rack middleware to profile requests. If you want to use Bullet without an http server, like to profile a job, you can use use profile method and fetch warnings
+The Brakefast gem uses rack middleware to profile requests. If you want to use Brakefast without an http server, like to profile a job, you can use use profile method and fetch warnings
 
 ```ruby
-Bullet.profile do
+Brakefast.profile do
   # do anything
 
-  warnings = Bullet.warnings
+  warnings = Brakefast.warnings
 end
 ```
 
 ### Work with sinatra
 
-Configure and use `Bullet::Rack`
+Configure and use `Brakefast::Rack`
 
 ```ruby
 configure :development do
-  Bullet.enable = true
-  Bullet.bullet_logger = true
-  use Bullet::Rack
+  Brakefast.enable = true
+  Brakefast.brakefast_logger = true
+  use Brakefast::Rack
 end
 ```
 
 ### Run in tests
 
-First you need to enable Bullet in test environment.
+First you need to enable Brakefast in test environment.
 
 ```ruby
 # config/environments/test.rb
 config.after_initialize do
-  Bullet.enable = true
-  Bullet.bullet_logger = true
-  Bullet.raise = true # raise an error if n+1 query occurs
+  Brakefast.enable = true
+  Brakefast.brakefast_logger = true
+  Brakefast.raise = true # raise an error if n+1 query occurs
 end
 ```
 
-Then wrap each test in Bullet api.
+Then wrap each test in Brakefast api.
 
 ```ruby
 # spec/spec_helper.rb
-if Bullet.enable?
+if Brakefast.enable?
   config.before(:each) do
-    Bullet.start_request
+    Brakefast.start_request
   end
 
   config.after(:each) do
-    Bullet.perform_out_of_channel_notifications if Bullet.notification?
-    Bullet.end_request
+    Brakefast.perform_out_of_channel_notifications if Brakefast.notification?
+    Brakefast.end_request
   end
 end
 ```
 
 ## Debug Mode
 
-Bullet outputs some details info, to enable debug mode, set
-`BULLET_DEBUG=true` env.
+Brakefast outputs some details info, to enable debug mode, set
+`BRAKEFAST_DEBUG=true` env.
 
 ## Contributors
 
-[https://github.com/flyerhzm/bullet/contributors](https://github.com/flyerhzm/bullet/contributors)
+[https://github.com/flyerhzm/brakefast/contributors](https://github.com/flyerhzm/brakefast/contributors)
 
 ## Demo
 
-Bullet is designed to function as you browse through your application in development. To see it in action, follow these steps to create, detect, and fix example query problems.
+Brakefast is designed to function as you browse through your application in development. To see it in action, follow these steps to create, detect, and fix example query problems.
 
 1\. Create an example application
 
 ```
-$ rails new test_bullet
-$ cd test_bullet
+$ rails new test_brakefast
+$ cd test_brakefast
 $ rails g scaffold post name:string
 $ rails g scaffold comment name:string post_id:integer
 $ bundle exec rake db:migrate
@@ -285,10 +275,10 @@ post2.comments.create(:name => 'fourth')
 <% end %>
 ```
 
-5\. Add the `bullet` gem to the `Gemfile`
+5\. Add the `brakefast` gem to the `Gemfile`
 
 ```ruby
-gem "bullet"
+gem "brakefast"
 ```
 
 And run
@@ -297,18 +287,18 @@ And run
 bundle install
 ```
 
-6\. enable the Bullet gem in development, add a line to
+6\. enable the Brakefast gem in development, add a line to
 `config/environments/development.rb`
 
 ```ruby
 config.after_initialize do
-  Bullet.enable = true
-  Bullet.alert = true
-  Bullet.bullet_logger = true
-  Bullet.console = true
-#  Bullet.growl = true
-  Bullet.rails_logger = true
-  Bullet.add_footer = true
+  Brakefast.enable = true
+  Brakefast.alert = true
+  Brakefast.brakefast_logger = true
+  Brakefast.console = true
+#  Brakefast.growl = true
+  Brakefast.rails_logger = true
+  Brakefast.add_footer = true
 end
 ```
 
@@ -329,17 +319,17 @@ model: Post => associations: [comment]
 
 which means there is a N+1 query from the Post object to its Comment association.
 
-In the meanwhile, there's a log appended into `log/bullet.log` file
+In the meanwhile, there's a log appended into `log/brakefast.log` file
 
 ```
 2010-03-07 14:12:18[INFO] N+1 Query in /posts
   Post => [:comments]
   Add to your finder: :include => [:comments]
 2010-03-07 14:12:18[INFO] N+1 Query method call stack
-  /home/flyerhzm/Downloads/test_bullet/app/views/posts/index.html.erb:14:in `_render_template__600522146_80203160_0'
-  /home/flyerhzm/Downloads/test_bullet/app/views/posts/index.html.erb:11:in `each'
-  /home/flyerhzm/Downloads/test_bullet/app/views/posts/index.html.erb:11:in `_render_template__600522146_80203160_0'
-  /home/flyerhzm/Downloads/test_bullet/app/controllers/posts_controller.rb:7:in `index'
+  /home/flyerhzm/Downloads/test_brakefast/app/views/posts/index.html.erb:14:in `_render_template__600522146_80203160_0'
+  /home/flyerhzm/Downloads/test_brakefast/app/views/posts/index.html.erb:11:in `each'
+  /home/flyerhzm/Downloads/test_brakefast/app/views/posts/index.html.erb:11:in `_render_template__600522146_80203160_0'
+  /home/flyerhzm/Downloads/test_brakefast/app/controllers/posts_controller.rb:7:in `index'
 ```
 
 The generated SQL is:
@@ -409,7 +399,7 @@ The request has N+1 queries as follows:
 None
 ```
 
-Meanwhile, there's a line appended to `log/bullet.log`
+Meanwhile, there's a line appended to `log/brakefast.log`
 
 ```
 2009-08-25 21:13:22[INFO] Unused preload associations: PATH_INFO: /posts;    model: Post => associations: [comments]·
@@ -449,11 +439,13 @@ Need counter cache
   Post => [:comments]
 ```
 
-Meanwhile, there's a line appended to `log/bullet.log`
+Meanwhile, there's a line appended to `log/brakefast.log`
 
 ```
 2009-09-11 10:07:10[INFO] Need Counter Cache
   Post => [:comments]
 ```
 
-Copyright (c) 2009 - 2015 Richard Huang (flyerhzm@gmail.com), released under the MIT license
+Copyright (c) 2009 - 2015 Richard Huang (flyerhzm (at) gmail.com), released under the MIT license in bullet original sentences
+
+Copyright (c) 2015 -  Sho Hashimoto (sho.hsmt (at) gmail.com), released under the MIT license in brakefast sentences
