@@ -7,7 +7,6 @@ module Brakefast
 
       attr_reader :vulnerability
       def_delegator :@vulnerability, :method, :target_method_name
-      def_delegator :@vulnerability, :message, :message
       def_delegator :@vulnerability, :file, :file
       def_delegator :@vulnerability, :line, :line
 
@@ -40,6 +39,14 @@ module Brakefast
         raise "override me"
       end
 
+      def message
+        vulnerability.message
+      end
+
+      def escaped_message
+        message.gsub("'", "\\\\'")
+      end
+
       private
 
       def create_module_name(s)
@@ -52,6 +59,15 @@ module Brakefast
           mod = Brakefast.const_get(name)
         else
           mod = Module.new
+          mod.module_eval %Q{
+            def self.prepended(base)
+              class << base
+                self.prepend(ClassMethods)
+              end
+            end
+            module ClassMethods
+            end
+          }
         end
 
         yield(mod)
@@ -59,9 +75,12 @@ module Brakefast
         # prepend once and create module once only.
         if mod.name.nil?
           Brakefast.const_set(name, mod)
-          ::Object.const_get(target_module_name).class_eval %Q{
-            prepend Brakefast::#{name}
-          }
+          mod = target_module_name.to_s.constantize rescue nil
+          if mod
+            mod.class_eval %Q{
+              prepend Brakefast::#{name}
+            }
+          end
         end
       end
     end
