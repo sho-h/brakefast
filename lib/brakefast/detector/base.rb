@@ -46,12 +46,23 @@ module Brakefast
         s.to_s.gsub("::", "__") + "BrakefastHook"
       end
 
-      def create_hook(module_name, hookee_mod)
-        name = create_module_name(module_name)
-        Brakefast.const_set(name, hookee_mod)
-        ::Object.const_get(module_name).class_eval %Q{
-          prepend Brakefast::#{name}
-        }
+      def create_hook
+        name = create_module_name(target_module_name)
+        if Brakefast.const_defined?(name)
+          mod = Brakefast.const_get(name)
+        else
+          mod = Module.new
+        end
+
+        yield(mod)
+
+        # prepend once and create module once only.
+        if mod.name.nil?
+          Brakefast.const_set(name, mod)
+          ::Object.const_get(target_module_name).class_eval %Q{
+            prepend Brakefast::#{name}
+          }
+        end
       end
     end
   end
